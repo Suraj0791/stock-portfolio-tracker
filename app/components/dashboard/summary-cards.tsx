@@ -1,6 +1,7 @@
 import { Holding } from "@/types";
 import { MetricCard } from "./metric-card";
 import { formatCurrency } from "@/lib/formatters";
+import { DollarSign, TrendingUp, TrendingDown, Package } from "lucide-react";
 
 interface PortfolioMetrics {
   totalValue: number;
@@ -16,22 +17,29 @@ export function SummaryCards({ metrics }: { metrics: PortfolioMetrics }) {
       <MetricCard
         title="Total Value"
         value={formatCurrency(metrics.totalValue)}
+        icon={DollarSign}
         change={metrics.totalGainPercent}
         changeType={metrics.totalGainPercent >= 0 ? "profit" : "loss"}
       />
       <MetricCard
         title="Top Performer"
         value={metrics.topPerformer?.symbol || "N/A"}
+        icon={TrendingUp}
         change={metrics.topPerformer?.unrealizedGainPercent}
         changeType="profit"
       />
       <MetricCard
         title="Worst Performer"
         value={metrics.worstPerformer?.symbol || "N/A"}
+        icon={TrendingDown}
         change={metrics.worstPerformer?.unrealizedGainPercent}
         changeType="loss"
       />
-      <MetricCard title="Unique Holdings" value={metrics.uniqueSymbols} />
+      <MetricCard 
+        title="Unique Holdings" 
+        icon={Package}
+        value={metrics.uniqueSymbols} 
+      />
     </div>
   );
 }
