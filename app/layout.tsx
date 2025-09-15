@@ -1,11 +1,20 @@
-// app/layout.tsx
-
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Poppins } from "next/font/google"; // Import Poppins
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const inter = Inter({ subsets: ["latin"] });
+// Configure the Inter font for the body text
+const inter = Inter({ 
+  subsets: ["latin"],
+  variable: '--font-inter', // Assign a CSS variable
+});
+
+// Configure the Poppins font for headings
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ['600', '700'], // Load semi-bold and bold weights
+  variable: '--font-poppins', // Assign a CSS variable
+});
 
 export const metadata: Metadata = {
   title: "Portfolio Tracker Pro",
@@ -18,12 +27,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // Add the "dark" class here
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
-        className={cn("min-h-screen font-sans antialiased", inter.className)}
+        className={cn(
+          "min-h-screen font-sans antialiased",
+          inter.variable, // Apply the Inter font variable
+          poppins.variable // Apply the Poppins font variable
+        )}
       >
-        {/* The animated blobs are removed */}
         {children}
       </body>
     </html>
