@@ -52,10 +52,9 @@
     border-color: hsl(var(--border));
   }
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  }
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
 }
 
 /* Custom animations */
