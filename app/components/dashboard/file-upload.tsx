@@ -1,8 +1,14 @@
 "use client";
-import React, { useRef } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { Button } from '@/app/components/ui/button';
-import { Loader2, UploadCloud, X } from 'lucide-react';
+import React, { useRef } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Loader2, UploadCloud, X } from "lucide-react";
 
 interface FileUploadProps {
   isLoading: boolean;
@@ -12,14 +18,22 @@ interface FileUploadProps {
   onClearData: () => void;
 }
 
-export function FileUpload({ isLoading, hasData, uploadError, handleFileUpload, onClearData }: FileUploadProps) {
+export function FileUpload({
+  isLoading,
+  hasData,
+  uploadError,
+  handleFileUpload,
+  onClearData,
+}: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <Card className="mb-8 bg-card/60 backdrop-blur-xl">
       <CardHeader>
         <CardTitle>Import Your Trades</CardTitle>
-        <CardDescription>Upload a CSV file with columns: symbol, shares, price, date</CardDescription>
+        <CardDescription>
+          Upload a CSV file with columns: symbol, shares, price, date
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -30,18 +44,32 @@ export function FileUpload({ isLoading, hasData, uploadError, handleFileUpload, 
             onChange={handleFileUpload}
             className="hidden"
           />
-          <Button onClick={() => fileInputRef.current?.click()} disabled={isLoading} className="w-full md:w-auto">
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
+            className="w-full md:w-auto"
+          >
+            {isLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <UploadCloud className="mr-2 h-4 w-4" />
+            )}
             {isLoading ? "Processing..." : "Upload CSV"}
           </Button>
           {hasData && (
-            <Button onClick={onClearData} variant="destructive" className="w-full md:w-auto">
+            <Button
+              onClick={onClearData}
+              variant="destructive"
+              className="w-full md:w-auto"
+            >
               <X className="mr-2 h-4 w-4" />
               Clear Data
             </Button>
           )}
         </div>
-        {uploadError && <p className="text-sm text-destructive mt-4">{uploadError}</p>}
+        {uploadError && (
+          <p className="text-sm text-destructive mt-4">{uploadError}</p>
+        )}
       </CardContent>
     </Card>
   );
