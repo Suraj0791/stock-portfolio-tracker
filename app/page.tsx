@@ -8,18 +8,21 @@ import { FileUpload } from './components/dashboard/file-upload';
 import { SummaryCards } from './components/dashboard/summary-cards';
 import { HoldingsTable } from './components/dashboard/holdings-table';
 import { PortfolioCharts } from './components/dashboard/portfolio-charts';
-import { FilterControls } from './components/dashboard/filter-control'; // Import the new component
 import { Card, CardContent } from './components/ui/card';
+
+// Define a type for the raw CSV data
+type CsvRow = {
+  symbol: string;
+  shares: string;
+  price: string;
+  date: string;
+};
 
 export default function DashboardPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [holdings, setHoldings] = useState<Record<string, Holding>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [uploadError, setUploadError] = useState('');
-  
-  // State for our new filters
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSector, setSelectedSector] = useState('all');
 
   useEffect(() => {
     const savedTrades = localStorage.getItem('portfolio_trades');
@@ -44,15 +47,17 @@ export default function DashboardPage() {
     setIsLoading(true);
     setUploadError('');
 
-    Papa.parse<Omit<Trade, 'symbol'>>(file, {
+    // Use the CsvRow type with Papa.parse
+    Papa.parse<CsvRow>(file, {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
+        // Now, the 'row' object is correctly typed, so we don't need 'any'
         const validTrades = results.data.map(row => ({
-          ...row,
-          symbol: (row as any).symbol?.toUpperCase(),
-          shares: parseFloat(String(row.shares)),
-          price: parseFloat(String(row.price)),
+          symbol: row.symbol?.toUpperCase(),
+          shares: parseFloat(row.shares),
+          price: parseFloat(row.price),
+          date: row.date,
         })).filter(t => t.symbol && !isNaN(t.shares) && !isNaN(t.price) && t.date);
 
         if (validTrades.length > 0) {
@@ -109,47 +114,32 @@ export default function DashboardPage() {
     localStorage.removeItem('portfolio_trades');
   };
 
-  // The filtering logic is now added here
-  const filteredHoldings = useMemo(() => {
-    let holdingsArray = Object.values(holdings);
-
-    if (searchTerm) {
-      holdingsArray = holdingsArray.filter(h => h.symbol.toLowerCase().includes(searchTerm.toLowerCase()));
-    }
-
-    if (selectedSector !== 'all') {
-      holdingsArray = holdingsArray.filter(h => h.sector === selectedSector);
-    }
-
-    return holdingsArray;
-  }, [holdings, searchTerm, selectedSector]);
+  const holdingsArray = useMemo(() => Object.values(holdings), [holdings]);
 
   const portfolioMetrics = useMemo(() => {
-    const totalValue = filteredHoldings.reduce((sum, h) => sum + h.currentValue, 0);
-    const totalCost = filteredHoldings.reduce((sum, h) => sum + h.avgCost * h.shares, 0);
+    const totalValue = holdingsArray.reduce((sum, h) => sum + h.currentValue, 0);
+    const totalCost = holdingsArray.reduce((sum, h) => sum + h.avgCost * h.shares, 0);
     const totalGain = totalValue - totalCost;
     const totalGainPercent = totalCost > 0 ? (totalGain / totalCost) * 100 : 0;
     
-    const sortedByGain = [...filteredHoldings].sort((a,b) => b.unrealizedGainPercent - a.unrealizedGainPercent);
+    const sortedByGain = [...holdingsArray].sort((a,b) => b.unrealizedGainPercent - a.unrealizedGainPercent);
 
     return {
       totalValue,
       totalGainPercent,
       topPerformer: sortedByGain[0],
       worstPerformer: sortedByGain[sortedByGain.length - 1],
-      uniqueSymbols: filteredHoldings.length,
+      uniqueSymbols: holdingsArray.length,
     };
-  }, [filteredHoldings]);
+  }, [holdingsArray]);
 
   const chartData = useMemo(() => {
-    const pieData = filteredHoldings.map(h => ({
+    const pieData = holdingsArray.map(h => ({
       name: h.symbol,
       value: h.currentValue,
     })).sort((a,b) => b.value - a.value).slice(0, 5);
     return { pieData };
-  }, [filteredHoldings]);
-
-  const sectors = useMemo(() => ['all', ...new Set(Object.values(holdings).map(h => h.sector))], [holdings]);
+  }, [holdingsArray]);
 
   return (
     <main className="container mx-auto p-4 md:p-8">
@@ -164,18 +154,10 @@ export default function DashboardPage() {
       {trades.length > 0 ? (
         <>
           <SummaryCards metrics={portfolioMetrics} />
-          {/* Render the new FilterControls component */}
-          <FilterControls
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            selectedSector={selectedSector}
-            setSelectedSector={setSelectedSector}
-            sectors={sectors}
-          />
           <PortfolioCharts pieData={chartData.pieData} />
-          <Card>
+          <Card className="bg-card/60 backdrop-blur-xl">
             <CardContent className="pt-6">
-              <HoldingsTable holdings={filteredHoldings} />
+              <HoldingsTable holdings={holdingsArray} />
             </CardContent>
           </Card>
         </>
